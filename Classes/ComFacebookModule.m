@@ -462,22 +462,39 @@ BOOL nativeLogin = false;
     }
 }
 
+
+/**
+ * A function for parsing URL parameters.
+ */
+- (NSDictionary*)parseURLParams:(NSString *)query {
+    NSArray *pairs = [query componentsSeparatedByString:@"&"];
+    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
+    for (NSString *pair in pairs) {
+        NSArray *kv = [pair componentsSeparatedByString:@"="];
+        NSString *val =
+        [kv[1] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        params[kv[0]] = val;
+    }
+    return params;
+}
+
 -(void)share:(id)args
 {
     NSLog(@"[DEBUG] facebook share");
+    
+    NSDictionary* params = [args objectAtIndex:0];
+    NSString* urlStr = [params objectForKey:@"url"];
+    NSURL* linkUrl = [NSURL URLWithString:urlStr];
+    NSString* namespaceObject = [params objectForKey:@"namespaceObject"];
+    NSString* namespaceAction = [params objectForKey:@"namespaceAction"];
+    NSString* objectName = [params objectForKey:@"objectName"];
+    NSString* placeId = [params objectForKey:@"placeId"];
+    NSString* imageUrl = [params objectForKey:@"imageUrl"];
+    NSString* openGraphTitle = [params objectForKey:@"title"];
+    NSString* openGraphDescription = [params objectForKey:@"description"];
+    
     if (canShare){
-        
-        NSDictionary* params = [args objectAtIndex:0];
-        NSString* urlStr = [params objectForKey:@"url"];
-        NSURL* linkUrl = [NSURL URLWithString:urlStr];
-        NSString* namespaceObject = [params objectForKey:@"namespaceObject"];
-        NSString* namespaceAction = [params objectForKey:@"namespaceAction"];
-        NSString* objectName = [params objectForKey:@"objectName"];
-        NSString* placeId = [params objectForKey:@"placeId"];
-        NSString* imageUrl = [params objectForKey:@"imageUrl"];
-        NSString* openGraphTitle = [params objectForKey:@"title"];
-        NSString* openGraphDescription = [params objectForKey:@"description"];
-        
+        NSLog(@"[DEBUG] facebook native share dialog");
         TiThreadPerformOnMainThread(^{
             if (objectName == nil || namespaceObject == nil || namespaceAction == nil){
                 [FBDialogs presentShareDialogWithLink:linkUrl
@@ -511,12 +528,48 @@ BOOL nativeLogin = false;
                                              previewPropertyName:objectName
                                                          handler:^(FBAppCall *call, NSDictionary *results, NSError *error) {
                                                              if(error) {
-                                                                 NSLog(@"Error: %@", error.description);
+                                                                 NSLog(@"[DEBUG] Facebook share error %@", error.description);
                                                              } else {
-                                                                 NSLog(@"Success!");
+                                                                 NSLog(@"Facebook share success!");
                                                              }
                                                          }];
             }
+        }, NO);
+    } else {
+        NSLog(@"[DEBUG] facebook web feed dialog");
+        // Put together the dialog parameters
+        NSMutableDictionary *params = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                       openGraphTitle, @"name",
+                                       openGraphTitle, @"caption",
+                                       openGraphDescription, @"description",
+                                       urlStr, @"link",
+                                       imageUrl, @"picture",
+                                       nil];
+        
+        // Show the feed dialog
+        TiThreadPerformOnMainThread(^{
+            [FBWebDialogs presentFeedDialogModallyWithSession:nil
+                                                   parameters:params
+                                                      handler:^(FBWebDialogResult result, NSURL *resultURL, NSError *error) {
+                                                          if (error) {
+                                                              NSLog(@"[DEBUG] Facebook share error %@", error.description);
+                                                          } else {
+                                                              if (result == FBWebDialogResultDialogNotCompleted) {
+                                                                  // User cancelled.
+                                                                  NSLog(@"[DEBUG] User cancelled.");
+                                                              } else {
+                                                                  // Handle the publish feed callback
+                                                                  NSDictionary *urlParams = [self parseURLParams:[resultURL query]];
+                                                                  if (![urlParams valueForKey:@"post_id"]) {
+                                                                      // User clicked the Cancel button
+                                                                      NSLog(@"[DEBUG] User cancelled.");
+                                                                  } else {
+                                                                      // User clicked the Share button
+                                                                      NSLog(@"Facebook share success!");
+                                                                  }
+                                                              }
+                                                          }
+                                                      }];
         }, NO);
     }
 }
