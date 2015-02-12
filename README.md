@@ -207,6 +207,12 @@ fb.logEvent('handsClapped');
 fb.logEvent('handsClapped', {times: 12});
 ```
 
+**logPurchase**
+```
+fb.logPurchase(6.78, 'USD');
+fb.logPurchase(6.78, 'USD', {userName: 'John Doe'});
+```
+
 To do
 -------
 *	Facebook branded buttons - use the SDK implementation or don't do it.
