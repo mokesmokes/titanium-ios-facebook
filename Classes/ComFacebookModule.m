@@ -343,15 +343,35 @@ NSTimeInterval meRequestTimeout = 180.0;
 }
 
 /**
- * JS example:
+ * JS examples:
  *
  * facebook.logCustomEvent('clappedHands');
+ * facebook.logCustomEvent('clappedHands', {times: 2});
  *
  */
 -(void)logCustomEvent:(id)args
 {
     NSString* event = [args objectAtIndex:0];
-    [FBAppEvents logEvent:event];
+    NSDictionary* eventData = nil;
+    
+    if ([args count] > 1) {
+        eventData = [args objectAtIndex:1];
+    }
+    
+    if([eventData isKindOfClass:[NSDictionary class]]){
+        [FBAppEvents logEvent:event parameters:eventData];
+    }else{
+        [FBAppEvents logEvent:event];
+    }
+}
+
+/**
+ * Alias for logCustomEvent
+ * Intended for exposing the method with the same name as in FB SDK.
+ */
+-(void)logEvent:(id)args
+{
+    [self logCustomEvent:args];
 }
 
 /**

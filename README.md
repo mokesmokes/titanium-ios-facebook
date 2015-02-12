@@ -5,7 +5,7 @@ Titanium Facebook Module
 Notes
 ------------
 * Install locally to your Titanium project, not globally. If you wish to install globally for all projects, you will need to modify module.xcconfig to point Xcode to the location of the FacebookSDK framework (in iphone/platform directory)
-* Note that the FacebookSDK.framework directory is the prebuilt Facebook SDK directly downloaded from Facebook, zero modifications. 
+* Note that the FacebookSDK.framework directory is the prebuilt Facebook SDK directly downloaded from Facebook, zero modifications.
 * Facebook is moving away from the native iOS login, and towards login through the Facebook app. The default behavior of this module is the same as in the Facebook SDK: app login with a fallback to webview. The advantages of the app login are: user control over individual permissions, and a uniform login experience over iOS, Android, and web. Additionally, the device login is quite prone to user error: for example, if the user declines to login initially with Facebook, then the next login will fail and the user needs to go into "Settings" on his phone and enable the app for Facebook. Many users will fail to do this. The only advantage of native device login is that it is faster. I recommend you leave the default as is, and if you do indeed elect nativeLogin then I recommend you do not request additional permissions beyond public_profile.
 * AppEvents are automatically logged. Check out the app Insights on Facebook. We can also log custom events for Insights.
 
@@ -55,7 +55,7 @@ where SomeName is exactly as appears in the Facebook developer settings page
 </array>
 ```
 *	`forceDialogAuth` - parameter unused.
-*	The login button functionality is for now removed. It makes no sense to use a button besides the Facebook branded buttons in the SDK, and that is left for the future. 
+*	The login button functionality is for now removed. It makes no sense to use a button besides the Facebook branded buttons in the SDK, and that is left for the future.
 *	Instead of "reauthorize" there is now requestNewReadPermissions and a separate requestNewPublishPermissions, as per the Facebook SDK. This provides much more flexibility and less nuisance to the users.
 
 Initialization
@@ -84,12 +84,12 @@ fb.initialize(timeoutInMs, nativeLogin); // initialize requires a timeout value 
 Events and error handling
 -------------------------
 
-The `login` and `logout` events work as in the original module. 
+The `login` and `logout` events work as in the original module.
 However, the error handling is now adhering to the new Facebook guidelines. Here is how to handle `login` events:
 ```javascript
 fb.addEventListener('login', function(e) {
 	if(e.success) {
-		// do your thang.... 
+		// do your thang....
 	} else if (e.cancelled) {
 		// login was cancelled, just show your login UI again
 	} else if (e.error) {
@@ -129,7 +129,7 @@ Use it! You don't need permissions, you don't even need the user to be logged in
 *	To post a graph action call:
 
 ```javascript
-fb.share({url: someUrl, namespaceObject: 'myAppnameSpace:graphObject', objectName: 'graphObject', imageUrl: someImageUrl, 
+fb.share({url: someUrl, namespaceObject: 'myAppnameSpace:graphObject', objectName: 'graphObject', imageUrl: someImageUrl,
 		title: aTitle, description: blahBlah, namespaceAction: 'myAppnameSpace:actionType', placeId: facebookPlaceId}`
 ```
 For the graph action apparently only placeId is optional.
@@ -138,7 +138,7 @@ Like Button
 -----------
 
 We can create a Like button just like any other view, with specific parameters documented in Facebook docs. Note there is no completion callback or event, and Facebook policies state "If you use the Like button on iOS or Android, don’t collect or use any information from it."
- 
+
 ```
 var likeButton = fbModule.createLikeButton({
 	top: 10,
@@ -170,10 +170,10 @@ fb.requestNewReadPermissions(['read_stream','user_hometown', etc...], function(e
  	}
 });
 ```
- 
+
 requestNewPublishPermissions
 ----------------------------
- 
+
  You must use the audience constants from the module, either `audienceNone`, `audienceOnlyMe`, `audienceFriends`, or `audienceEveryone`.
  Note that it is not an error for the user to 'Skip' your requested permissions, so you should check the module's permissions property following the call.
 
@@ -196,18 +196,24 @@ requestWithGraphPath
 Same as the original Titanium Facebook module. However, there is automatic error handling.
 So in case of error only alert the user if `error == 'An unexpected error'`, everything else was already handled for you.
 
+Events logging
+--------------
+
+More info about [FBAppEvents](https://developers.facebook.com/docs/reference/ios/3.9/class/FBAppEvents)
+
+**logEvent** (*alias for logCustomEvent*)
+```
+fb.logEvent('handsClapped');
+fb.logEvent('handsClapped', {times: 12});
+```
+
 To do
 -------
 *	Facebook branded buttons - use the SDK implementation or don't do it.
 *	[Share sheet](https://developers.facebook.com/docs/ios/ios-6/#nativepostcontroller) - it's more lightweight than the Share Dialog, but also with many less features. Some apps use Share Dialog (e.g. Pintrest), some the Share Sheet (e.g. Foodspotting).
 *	Additional dialogs. But why?!?!??!? They are web based, require permissions, few good apps use them today. Just use the Share Dialog, or Share Sheet, or don't bother, in my opinion.
 
-Custom App Events
------------------
-```
-fb.logCustomEvent('handsClapped'); // Pass a string for the event name, view the events on Facebook Insights
-```
-	
+
 Feel free to comment and help out! :)
 -------------------------------------
 
