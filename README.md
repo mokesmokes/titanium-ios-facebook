@@ -199,7 +199,7 @@ So in case of error only alert the user if `error == 'An unexpected error'`, eve
 Events logging
 --------------
 
-More info about [FBAppEvents](https://developers.facebook.com/docs/reference/ios/3.9/class/FBAppEvents)
+More info about [FBAppEvents](https://developers.facebook.com/docs/reference/ios/current/class/FBAppEvents/)
 
 **logEvent** (*alias for logCustomEvent*)
 ```
