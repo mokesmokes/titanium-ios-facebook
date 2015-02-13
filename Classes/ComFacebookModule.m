@@ -343,15 +343,72 @@ NSTimeInterval meRequestTimeout = 180.0;
 }
 
 /**
- * JS example:
+ * JS examples:
  *
  * facebook.logCustomEvent('clappedHands');
+ * facebook.logCustomEvent('clappedHands', {times: 2});
  *
  */
 -(void)logCustomEvent:(id)args
 {
     NSString* event = [args objectAtIndex:0];
-    [FBAppEvents logEvent:event];
+    NSDictionary* eventData = nil;
+    
+    if ([args count] > 1) {
+        eventData = [args objectAtIndex:1];
+    }
+    
+    if([eventData isKindOfClass:[NSDictionary class]]){
+        [FBAppEvents logEvent:event parameters:eventData];
+    }else{
+        [FBAppEvents logEvent:event];
+    }
+}
+
+/**
+ * Alias for logCustomEvent
+ * Intended for exposing the method with the same name as in FB SDK.
+ */
+-(void)logEvent:(id)args
+{
+    [self logCustomEvent:args];
+}
+
+/**
+ * JS examples:
+ *
+ * facebook.logPurchase(6.78, 'USD');
+ * facebook.logPurchase(6.78, 'USD', {userName: 'John Doe'});
+ *
+ */
+-(void)logPurchase:(id)args
+{
+    // We have to have at least amount and currency
+    if ([args count] < 2) {
+        NSLog(@"[DEBUG] Facebook logPurchase - Insufficient parameters");
+        return;
+    }
+
+    double amount = [TiUtils doubleValue:[args objectAtIndex:0] def: 0.0];
+    NSString* currency = [args objectAtIndex:1];
+    NSDictionary* eventData = nil;
+    
+    // Check if provided data is valid
+    if (amount == 0 || [currency length] == 0){
+        NSLog([NSString stringWithFormat:
+               @"[DEBUG] Facebook logPurchase - Provided parameters are invalid. Amount: %f - Currency: %@", amount, currency]);
+        return;
+    }
+    
+    if ([args count] > 2) {
+        eventData = [args objectAtIndex:2];
+    }
+    
+    if([eventData isKindOfClass:[NSDictionary class]]){
+        [FBAppEvents logPurchase:amount currency:currency parameters:eventData];
+    }else{
+        [FBAppEvents logPurchase:amount currency:currency];
+    }
 }
 
 /**
